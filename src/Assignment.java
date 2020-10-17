@@ -34,9 +34,9 @@ public class Assignment {
 
     @Override
     public String toString() {
-        return "Assignment{" +
-                "items=" + Arrays.toString(items) +
-                ", pharmacy=" + pharmacy.getName() +
-                '}';
+        return "Assignment {\n" +
+                "\titems = " + Arrays.toString(items) +
+                ",\n\tpharmacy = " + pharmacy.getName() +
+                "\n}\n";
     }
 }
