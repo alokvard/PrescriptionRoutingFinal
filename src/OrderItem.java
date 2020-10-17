@@ -39,10 +39,10 @@ public class OrderItem {
 
     @Override
     public String toString() {
-        return "OrderItem{" +
-                "drug='" + drug + '\'' +
-                ", order=" + order +
-                ", quantity=" + quantity +
+        return "OrderItem {" +
+                "drug = '" + drug + '\'' +
+                ", order = " + order +
+                ", quantity = " + quantity +
                 '}';
     }
 }
