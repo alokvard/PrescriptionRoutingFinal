@@ -40,13 +40,11 @@ public class Router {
 
         Arrays.fill(minEstimates, Integer.MAX_VALUE);
 
-        for(int i = 0; i < pharmacies.length; i++){
-            Pharmacy currentPharmacy = pharmacies[i];
+        for (Pharmacy currentPharmacy : pharmacies) {
             int[] currPharmacyEstimates = currentPharmacy.estimateEachItemCost(order.getItems());
 
-            for(int j = 0; j < minEstimates.length; j++){
-                if(minEstimates[j] < currPharmacyEstimates[j]) continue;
-
+            for (int j = 0; j < minEstimates.length; j++) {
+                if (minEstimates[j] <= currPharmacyEstimates[j]) continue;
                 minEstimates[j] = currPharmacyEstimates[j];
                 minPricePharmacies[j] = currentPharmacy;
             }
