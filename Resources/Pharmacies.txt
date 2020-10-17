@@ -1,0 +1,8 @@
+Walgreens
+CVS
+Walmart
+Target
+Rite-Aid
+Community-Pharmacy
+Cigna
+UnitedHealth
