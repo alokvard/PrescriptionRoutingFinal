@@ -1,8 +1,12 @@
 public class OrderItem {
+
+    //Region properties
     private String drug;
     private Order order;
     private int quantity;
+    //EndRegion properties
 
+    //Region constructor
     public OrderItem(String drug, Order order, int quantity) {
         this.drug = drug;
         this.order = order;
@@ -12,7 +16,9 @@ public class OrderItem {
     public OrderItem() {
 
     }
+    //EndRegion constructor
 
+    //Region Getter/Setters
     public String getDrug() {
         return drug;
     }
@@ -36,12 +42,13 @@ public class OrderItem {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+    //EndRegion Getter/Setters
 
     @Override
     public String toString() {
         return "OrderItem {" +
                 "drug = '" + drug + '\'' +
-                ", order = " + order +
+                ", order = " + order.getOrderId() +
                 ", quantity = " + quantity +
                 '}';
     }

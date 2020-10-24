@@ -1,27 +1,40 @@
+import com.sun.org.apache.xpath.internal.operations.Or;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Assignment {
 
-    //start properties
-    private OrderItem[] items;
+    //Region properties
+    private List<OrderItem> items;
     private Pharmacy pharmacy;
-    //end properties
+    //EndRegion properties
 
-    public Assignment(OrderItem[] items, Pharmacy pharmacy) {
+    //Region constructor
+    public Assignment(List<OrderItem> items, Pharmacy pharmacy) {
         this.items = items;
         this.pharmacy = pharmacy;
     }
 
-    public Assignment() {
-
+    public Assignment(Pharmacy pharmacy) {
+        this.pharmacy = pharmacy;
+        this.items = new ArrayList<>();
     }
 
+    //EndRegion constructor
+
+    //Region Getter/Setters
     public OrderItem[] getItems() {
+        return (OrderItem[]) items.toArray();
+    }
+
+    public List<OrderItem> getItemsList() {
         return items;
     }
 
     public void setItems(OrderItem[] items) {
-        this.items = items;
+        this.items = new ArrayList<>(Arrays.asList(items));
     }
 
     public Pharmacy getPharmacy() {
@@ -31,11 +44,16 @@ public class Assignment {
     public void setPharmacy(Pharmacy pharmacy) {
         this.pharmacy = pharmacy;
     }
+    //EndRegion Getter/Setters
+
+    public void addItem(OrderItem item){
+        items.add(item);
+    }
 
     @Override
     public String toString() {
-        return "Assignment {\n" +
-                "\titems = " + Arrays.toString(items) +
+        return "{\n" +
+                "\titems = " + items.toString() +
                 ",\n\tpharmacy = " + pharmacy.getName() +
                 "\n}\n";
     }

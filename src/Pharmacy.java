@@ -2,11 +2,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Pharmacy {
+
+    //Region properties
     private Inventory[] inventory;
     private String name;
-
+    private String location;
     private Map<String , Inventory> inventoryItems;
-    
+    //EndRegion properties
+
+    //Region constructor
     public Pharmacy() {
         inventory = new Inventory[0];
         name = "";
@@ -28,17 +32,26 @@ public class Pharmacy {
         inventoryItems = new HashMap<>();
         defaultPopulateInventory();
     }
+    //EndRegion constructor
 
+    /**
+     * populates the inventory items map
+     */
     private void defaultPopulateInventory() {
         for(Inventory inventoryItem : this.inventory){
             inventoryItems.put(inventoryItem.getDrug(), inventoryItem);
         }
     }
 
+    //Region Getter/Setters
     public Inventory[] getInventory() {
         return inventory;
     }
 
+    /**
+     *
+     * @param inventory
+     */
     public void setInventory(Inventory[] inventory) {
 
         this.inventory = inventory;
@@ -53,9 +66,22 @@ public class Pharmacy {
         this.name = name;
     }
 
+    public String getLocation() {
+        return location;
+    }
 
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-    public void updateInventorySize(Inventory inventory, int quantity){
+    //EndRegion Getter/Setters
+
+    /**
+     * updates the Inventory size
+     * @param inventory inventory to be updated
+     * @param quantity quantity
+     */
+    public void updateInventorySize(Inventory inventory, int quantity, boolean added){
         if(inventory == null || quantity <=0){
             return;
         }
@@ -64,9 +90,14 @@ public class Pharmacy {
 
         if(drugName == null || drugName.isEmpty()) return;
 
-        inventory.setQuantity(quantity);
+        inventory.updateQuantity(quantity, added);
     }
 
+    /**
+     * updates the Inventory Cost
+     * @param inventory inventory to be updated
+     * @param cost new cost
+     */
     public void updateInventoryCost(Inventory inventory, int cost){
         if(inventory == null || cost <= 0){
             return;
@@ -79,6 +110,11 @@ public class Pharmacy {
         inventory.setCost(cost);
     }
 
+    /**
+     * estimates an OrderItem's Cost
+     * @param orderItem orderitem for which we are estimating the cost
+     * @return estimated cost of an OrderItem
+     */
     public int estimateOrderItemCost(OrderItem orderItem){
 
         if(!inventoryItems.containsKey(orderItem.getDrug())){
@@ -94,6 +130,11 @@ public class Pharmacy {
         return estimateCost == 0? Integer.MAX_VALUE : estimateCost;
     }
 
+    /**
+     * estimates an order's Cost
+     * @param orderItems array of orderitems for which we are estimating the cost
+     * @return estimated cost of an OrderItems
+     */
     public int estimateOrderCost(OrderItem[] orderItems){
 
         int orderItemEstimate = 0;
@@ -109,6 +150,11 @@ public class Pharmacy {
         return totOrderItemEstimate;
     }
 
+    /**
+     * estimates each items cost individually
+     * @param orderItems rray of orderitems for which we are estimating the cost
+     * @return array of estimated cost of each OrderItem
+     */
     public int[] estimateEachItemCost(OrderItem[] orderItems){
         if(orderItems == null || orderItems.length == 0) return new int[0];
 

@@ -3,10 +3,17 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 class Main {
+    //Region properties
     private static ArrayList<String> drugsNames;
     private static ArrayList<String> pharmaciesNames;
     private static final int orderItemSize = 3;
+    //EndRegion properties
 
+    /**
+     *
+     * @param fileName
+     * @return
+     */
     private static ArrayList<String> readData(String fileName){
         ArrayList<String> result = new ArrayList<>();
 
@@ -25,6 +32,15 @@ class Main {
         return result;
     }
 
+    /**
+     *
+     * @param size
+     * @param priceMin
+     * @param priceMax
+     * @param quantityMin
+     * @param quantityMax
+     * @return
+     */
     private static Inventory[] generateInventory(int size, int priceMin, int priceMax,
                                               int quantityMin, int quantityMax){
         if (size < 0) return null;
@@ -49,6 +65,14 @@ class Main {
         return inventory;
     }
 
+    /**
+     *
+     * @param size
+     * @param order
+     * @param quantityMin
+     * @param quantityMax
+     * @return
+     */
     private static OrderItem[] generateOrderItems(int size, Order order,
                                               int quantityMin, int quantityMax){
         if(size < 0) return null;
@@ -74,12 +98,17 @@ class Main {
 
         return items;
     }
-
+    /**
+     *
+     */
     private static Pharmacy[] pharmacies;
 
+    /**
+     *
+     */
     public static void main(String[] args) {
-        String drugsFileName = "Resources/Drugs.txt";
-        String pharmacyFileName = "Resources/Pharmacies.txt";
+        String drugsFileName = "./Resources/Drugs.txt";
+        String pharmacyFileName = "./Resources/Pharmacies.txt";
         drugsNames = readData(drugsFileName);
         pharmaciesNames = readData(pharmacyFileName);
         final int pharmaciesSize = pharmaciesNames.size();
@@ -95,28 +124,44 @@ class Main {
         testOrderFulfillment();
     }
 
+    /**
+     *
+     */
     private static void testOrderFulfillment() {
         for (int orderCount = 0; orderCount < 10; orderCount++) {
             generateAndFulfilOrder();
         }
     }
 
+    /**
+     *
+     */
     private static void generateAndFulfilOrder() {
         Order order = new Order();
         OrderItem[] items = generateOrderItems(orderItemSize, order, 1, 4);
         order.setItems(items);
 
         Router router = new Router(pharmacies);
-
         Assignment[] assignments = router.assign(order);
 
-        //printAssignmentBreak();
+        if(assignments == null){
+            return;
+        }
+
+        //print order
+        System.out.println("Order :");
+        System.out.println(order.toString());
+
+        System.out.println("Assignments :");
         for (Assignment assignment : assignments) {
             System.out.println(assignment.toString());
         }
         printAssignmentBreak();
     }
 
+    /**
+     * prints line break
+     */
     private static void printAssignmentBreak() {
         System.out.println("---------------------------------------");
     }

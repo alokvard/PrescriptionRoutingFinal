@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Prescription Routing:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Prescription_Routing_jar</output-path>
+    <root id="archive" name="Prescription Routing.jar">
+      <element id="module-output" name="Prescription Routing" />
+    </root>
+  </artifact>
+</component>
