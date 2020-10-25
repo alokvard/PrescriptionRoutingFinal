@@ -1,6 +1,5 @@
-import sun.misc.ASCIICaseInsensitiveComparator;
-
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.security.MessageDigest;
@@ -8,6 +7,10 @@ import java.security.MessageDigest;
 public class Router {
     //Region properties
     private Pharmacy[] pharmacies;
+    private static List<Assignment> bestAssignments;
+    private static float bestCost;
+    private static MessageDigest md;
+    private static String OrderDestination;
     //EndRegion properties
 
     //Region constructor
@@ -31,87 +34,115 @@ public class Router {
     public void setPharmacies(Pharmacy[] pharmacies) {
         this.pharmacies = pharmacies;
     }
-
-    static List<Assignment> bestAssignments;
-    static float bestCost;
-    static MessageDigest md;
-    static String OrderDestination;
     //EndRegion Getter/Setters
-
 
     //Region private helper functions
     /**
-     * generates assignments array from the assignments map
-     * @param assignmentMap assignments HashMap which maps a pharmacy to the list of ordertitems it fulfilled
-     * @return returns array of assignments
+     * find the minimum estimate by generating all the combinations possible to get the order fulfilled
+     * from the pharmacies recursively
+     * @param items array of orderitem for an order
+     * @param index index of the orderitem being processed from the array of orderitems
+     * @param pharmacyOptions pharmacies that can fulfill this orderitem
+     * @param assignments possible combination of pharmacy assignments that fulfills the order
      */
-    private Assignment[] generateAssignments(Map<Pharmacy, List<OrderItem>> assignmentMap){
-        Assignment[] assignments = new Assignment[assignmentMap.size()];
-        int i = 0;
-        //generate assignments from map
-        for(Map.Entry<Pharmacy, List<OrderItem>> entry : assignmentMap.entrySet()){
-            assignments[i] = new Assignment(entry.getValue(), entry.getKey());
-            assignments[i].setItems(entry.getValue().toArray(new OrderItem[0]));
-            i++;
+    private void assignHelper(OrderItem[] items, int index, List<List<Pharmacy>> pharmacyOptions,Map<Pharmacy, Assignment> assignments){
+        if(index == items.length){
+            calculateCurrentAssignmentCost(assignments);
+            return;
         }
 
-        return assignments;
+        for (Pharmacy p: pharmacyOptions.get(index)) {
+            if(!assignments.containsKey(p)){
+                assignments.put(p, new Assignment(p));
+            }
+            assignments.get(p).addItem(items[index]);
+            assignHelper(items, index + 1, pharmacyOptions, assignments);
+            assignments.get(p).getItemsList().remove(assignments.get(p).getItemsList().size() - 1);
+
+            if(assignments.get(p).getItemsList().size() == 0){
+                assignments.remove(p);
+            }
+        }
+    }
+
+    /**
+     * calculates the price of current assignment and overall best estimate based on that
+     * @param assignments possible combination of pharmacy assignments that fulfills the order
+     */
+    private void calculateCurrentAssignmentCost(Map<Pharmacy, Assignment>assignments) {
+        Map<OrderItem, List<Pharmacy>> map = new HashMap<>();
+        float currentCost = 0.0f;
+
+        for (Map.Entry<Pharmacy, Assignment> entry: assignments.entrySet()) {
+            currentCost += getShippingCostFor(entry.getKey().getLocation())/100;
+            currentCost += entry.getKey().estimateOrderCost(entry.getValue().getItems());
+        }
+        if (Float.compare(bestCost, currentCost) <= 0) return;
+
+        bestCost = currentCost;
+        bestAssignments.clear();
+
+        for ( Assignment currAssignment : assignments.values() ) {
+            bestAssignments.add(new Assignment(currAssignment));
+        }
+    }
+
+    /**
+     * gets the shipping price
+     * @param location pharmacy location
+     * @return shipping price
+     */
+    private static float getShippingCostFor(String location){
+        //use cache
+        String destLoc = OrderDestination + location;
+        String hex = (new HexBinaryAdapter()).marshal(md.digest(destLoc.getBytes()));
+        BigInteger bi = new BigInteger(hex,16);
+        return bi.mod(new BigInteger("1000")).floatValue();
+    }
+
+    /**
+     * check if we didn't find any pharmacy for an orderitem
+     * @param pharmacyOptions list of pharmacies that can fulfill and orderitem
+     * @return true if all orderitems have corresponding pharmacies else false
+     */
+    private boolean canFulfillOrder(List<List<Pharmacy>> pharmacyOptions){
+        for (List<Pharmacy> list: pharmacyOptions) {
+            if(list.size() == 0) return false;
+        }
+
+        return true;
+    }
+
+    /**+
+     * generates the assignment array from bestassignments list
+     * @return array of assignment
+     */
+    private Assignment[] generateBestAssignments(){
+        Assignment[] assignmentsFound = new Assignment[bestAssignments.size()];
+
+        for(int i = 0; i < bestAssignments.size(); i++){
+            assignmentsFound[i] = bestAssignments.get(i);
+        }
+        return assignmentsFound;
     }
     //EndRegion private helper functions
 
     //Region public functions
     /**
-     * finds assignments to fulfil an order
-     * @param order input order
-     * @return array of assignments to fulfill the order
-     *         returns null if the order can't be fulfilled
+     * finds the assignments to fulfill an order
+     * @param order given order
+     * @return array of assignments that fulfill the order
      */
     public Assignment[] assign(Order order){
         if(order == null || order.getItems() == null) return null;
 
         final int orderSize = order.getItems().length;
-        if(orderSize == 0) return null;
-
-        int[] minEstimates = new int[orderSize];
-        OrderDestination = order.getDestination();
-        bestCost = Float.MIN_VALUE;
-        bestAssignments = new ArrayList<>();
-        Pharmacy[] minPricePharmacies = new Pharmacy[orderSize];
-        Arrays.fill(minEstimates, Integer.MAX_VALUE);
-
-        //find min prices
-        for (Pharmacy currentPharmacy : pharmacies) {
-            int[] currPharmacyEstimates = currentPharmacy.estimateEachItemCost(order.getItems());
-
-            for (int j = 0; j < minEstimates.length; j++) {
-                if (minEstimates[j] <= currPharmacyEstimates[j]) continue;
-                minEstimates[j] = currPharmacyEstimates[j];
-                minPricePharmacies[j] = currentPharmacy;
-            }
-        }
-
-        Map<Pharmacy, List<OrderItem>> assignmentMap = new HashMap<>();
-        //combine pharmacies
-        for(int i = 0; i < orderSize; i++){
-            if(minEstimates[i] == Integer.MAX_VALUE) return null;
-            if(!assignmentMap.containsKey(minPricePharmacies[i])){
-                assignmentMap.put(minPricePharmacies[i], new ArrayList<>());
-            }
-            assignmentMap.get(minPricePharmacies[i]).add(order.getItems()[i]);
-        }
-
-        Assignment[] assignments = generateAssignments(assignmentMap);
-
-        return assignments;
-    }
-
-
-    public Assignment[] assign1(Order order){
-        if(order == null || order.getItems() == null) return null;
-        final int orderSize = order.getItems().length;
-        Map<OrderItem, List<Pharmacy>> map = new HashMap<>();
         List<List<Pharmacy>> pharmacyOptions = new ArrayList<>();
-        int[] minEstimates = new int[orderSize];
+        Map<Pharmacy, Assignment> assignments = new HashMap<>();
+
+        OrderDestination = order.getDestination();
+        bestCost = Float.MAX_VALUE;
+        bestAssignments = new ArrayList<>();
 
         for(int i = 0; i < orderSize; i++){
             pharmacyOptions.add(new ArrayList<>());
@@ -127,59 +158,14 @@ public class Router {
                pharmacyOptions.get(j).add(currentPharmacy);
             }
         }
-        //order cannot be fulfilled
-        for (List<Pharmacy> list: pharmacyOptions) {
-            if(list.size() == 0) return new Assignment[0];
-        }
+
+        //check if order cannot be fulfilled
+        if(!canFulfillOrder(pharmacyOptions)) return new Assignment[0];
 
         //try all assignments
-        Map<Pharmacy, Assignment>assignments = new HashMap<>();
-
         assignHelper(items, 0, pharmacyOptions,assignments);
-
-        return (Assignment[]) bestAssignments.toArray();
+        Assignment[] assignmentsFound = generateBestAssignments();
+        return assignmentsFound;
     }
-
-    private void assignHelper(OrderItem[] items, int index, List<List<Pharmacy>> pharmacyOptions,Map<Pharmacy, Assignment> assignments){
-        if(index == items.length){
-            calculateCurrentAssignmentCost(assignments);
-            return;
-        }
-
-        for (Pharmacy p: pharmacyOptions.get(index)) {
-
-            if(!assignments.containsKey(p)){
-                assignments.put(p, new Assignment(p));
-            }
-
-            assignments.get(p).addItem(items[index]);
-            assignHelper(items, index + 1, pharmacyOptions, assignments);
-            assignments.get(p).getItemsList().remove(assignments.get(p).getItemsList().size() - 1);
-        }
-
-    }
-
-    private void calculateCurrentAssignmentCost(Map<Pharmacy, Assignment>assignments) {
-        Map<OrderItem, List<Pharmacy>> map = new HashMap<>();
-        float currentCost = 0.0f;
-
-        for (Map.Entry<Pharmacy, Assignment> entry: assignments.entrySet()) {
-            currentCost += getShippingCostFor(entry.getKey().getLocation())/100;
-            currentCost += entry.getKey().estimateOrderCost(entry.getValue().getItems());
-        }
-        if (Float.compare(bestCost, currentCost) <= 0) return;
-
-        bestCost = currentCost;
-        bestAssignments.addAll(assignments.values());
-    }
-
-    private static float getShippingCostFor(String location){
-        //use cache
-        String destLoc = OrderDestination + location;
-        String hex = (new HexBinaryAdapter()).marshal(md.digest(destLoc.getBytes()));
-        final float n = (float) Integer.parseInt(hex, 16);
-        return n%1000;
-    }
-
     //EndRegion public functions
 }

@@ -46,8 +46,7 @@ public class Inventory {
     }
     //EndRegion Getter/Setters
 
-    //Region Public functions
-
+    //Region Public methods
     /**
      * updates the quantity of the drug
      * @param quantityChange change in the amount of drug
@@ -56,5 +55,5 @@ public class Inventory {
     public void updateQuantity(int quantityChange,  boolean added){
         this.quantity += added ? quantityChange : -1 * quantityChange;
     }
-    //EndRegion
+    //EndRegion Public methods
 }

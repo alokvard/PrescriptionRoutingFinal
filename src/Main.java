@@ -6,13 +6,18 @@ class Main {
     //Region properties
     private static ArrayList<String> drugsNames;
     private static ArrayList<String> pharmaciesNames;
+    private static ArrayList<String> destinations;
+    private static ArrayList<String> locations;
+    private static Pharmacy[] pharmacies;
+    private static Random rand = new Random();
     private static final int orderItemSize = 3;
     //EndRegion properties
 
+    //Region private methods
     /**
-     *
-     * @param fileName
-     * @return
+     * reads Data from a file
+     * @param fileName file to be read
+     * @return arraylist of lines of file data
      */
     private static ArrayList<String> readData(String fileName){
         ArrayList<String> result = new ArrayList<>();
@@ -33,13 +38,13 @@ class Main {
     }
 
     /**
-     *
-     * @param size
-     * @param priceMin
-     * @param priceMax
-     * @param quantityMin
-     * @param quantityMax
-     * @return
+     * generates Inventory randomly
+     * @param size size of the inventory to be generated
+     * @param priceMin minimum price for the inventory
+     * @param priceMax maximum price for the inventory
+     * @param quantityMin minimum quantity for the inventory
+     * @param quantityMax maximum quantity for the inventory
+     * @return array of inventory
      */
     private static Inventory[] generateInventory(int size, int priceMin, int priceMax,
                                               int quantityMin, int quantityMax){
@@ -49,7 +54,6 @@ class Main {
         Inventory[] inventory = new Inventory[size];
 
         Set<Integer> set = new HashSet<>();
-        Random rand = new Random();
         int counter = 0;
         while (counter < size) {
             int drugIndex = rand.nextInt(drugsNames.size());
@@ -66,12 +70,12 @@ class Main {
     }
 
     /**
-     *
-     * @param size
-     * @param order
-     * @param quantityMin
-     * @param quantityMax
-     * @return
+     * generates OrderItems randomly
+     * @param size size of the orderitem array to be generated
+     * @param order Order linked to these objects
+     * @param quantityMin minimum quantity for an orderitem
+     * @param quantityMax maximum quantity for an orderitem
+     * @return array of orderitem
      */
     private static OrderItem[] generateOrderItems(int size, Order order,
                                               int quantityMin, int quantityMax){
@@ -98,34 +102,9 @@ class Main {
 
         return items;
     }
-    /**
-     *
-     */
-    private static Pharmacy[] pharmacies;
 
     /**
-     *
-     */
-    public static void main(String[] args) {
-        String drugsFileName = "./Resources/Drugs.txt";
-        String pharmacyFileName = "./Resources/Pharmacies.txt";
-        drugsNames = readData(drugsFileName);
-        pharmaciesNames = readData(pharmacyFileName);
-        final int pharmaciesSize = pharmaciesNames.size();
-        pharmacies = new Pharmacy[pharmaciesSize];
-
-        for (int i = 0; i < pharmaciesSize; i++) {
-            pharmacies[i] = new Pharmacy();
-            pharmacies[i].setName(pharmaciesNames.get(i));
-            Inventory[] currInventory = generateInventory(10, 0, 10, 1, 10);
-            pharmacies[i].setInventory(currInventory);
-        }
-
-        testOrderFulfillment();
-    }
-
-    /**
-     *
+     * testing the order fulfilment
      */
     private static void testOrderFulfillment() {
         for (int orderCount = 0; orderCount < 10; orderCount++) {
@@ -134,12 +113,14 @@ class Main {
     }
 
     /**
-     *
+     * generates an order and tries to fulfill the order
      */
     private static void generateAndFulfilOrder() {
         Order order = new Order();
         OrderItem[] items = generateOrderItems(orderItemSize, order, 1, 4);
         order.setItems(items);
+        int randInd = rand.nextInt(destinations.size());
+        order.setDestination(destinations.get(randInd));
 
         Router router = new Router(pharmacies);
         Assignment[] assignments = router.assign(order);
@@ -164,5 +145,33 @@ class Main {
      */
     private static void printAssignmentBreak() {
         System.out.println("---------------------------------------");
+    }
+
+    //EndRegion private methods
+
+    /**
+     * runner function
+     */
+    public static void main(String[] args) {
+        String drugsFileName = "./Resources/Drugs.txt";
+        String pharmacyFileName = "./Resources/Pharmacies.txt";
+        String locationsFileName = "./Resources/Locations.txt";
+        String destinationFileName = "./Resources/Destinations.txt";
+        drugsNames = readData(drugsFileName);
+        pharmaciesNames = readData(pharmacyFileName);
+        locations = readData(locationsFileName);
+        destinations = readData(destinationFileName);
+
+        final int pharmaciesSize = pharmaciesNames.size();
+        pharmacies = new Pharmacy[pharmaciesSize];
+
+        for (int i = 0; i < pharmaciesSize; i++) {
+            pharmacies[i] = new Pharmacy();
+            pharmacies[i].setName(pharmaciesNames.get(i));
+            pharmacies[i].setLocation(locations.get(i));
+            Inventory[] currInventory = generateInventory(10, 0, 10, 1, 10);
+            pharmacies[i].setInventory(currInventory);
+        }
+        testOrderFulfillment();
     }
 }

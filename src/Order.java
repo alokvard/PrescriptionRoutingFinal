@@ -40,7 +40,6 @@ public class Order {
     public void setDestination(String destination) {
         this.destination = destination;
     }
-
     //EndRegion Getter/Setters
 
     @Override
@@ -48,6 +47,7 @@ public class Order {
         return "{\n" +
                 "\titems=" + Arrays.toString(items) +
                 ",\n\tOrderId=" + _thisOrderId +
+                ",\n\tDestination=" + destination +
                 "\n}\n";
     }
 }

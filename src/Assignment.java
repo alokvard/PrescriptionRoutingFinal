@@ -12,6 +12,10 @@ public class Assignment {
     //EndRegion properties
 
     //Region constructor
+    public Assignment() {
+
+    }
+
     public Assignment(List<OrderItem> items, Pharmacy pharmacy) {
         this.items = items;
         this.pharmacy = pharmacy;
@@ -22,11 +26,23 @@ public class Assignment {
         this.items = new ArrayList<>();
     }
 
+    public Assignment(Assignment assignment) {
+        this.pharmacy = assignment.pharmacy;
+        this.items = new ArrayList<>();
+        for (OrderItem cloneOrderItem: assignment.getItemsList()) {
+            OrderItem curr = new OrderItem(cloneOrderItem);
+            this.addItem(curr);
+        }
+    }
     //EndRegion constructor
 
     //Region Getter/Setters
     public OrderItem[] getItems() {
-        return (OrderItem[]) items.toArray();
+        OrderItem[] ordItems = new OrderItem[items.size()];
+        for(int i = 0; i < items.size(); i++){
+            ordItems[i] = items.get(i);
+        }
+        return ordItems;
     }
 
     public List<OrderItem> getItemsList() {
@@ -46,6 +62,12 @@ public class Assignment {
     }
     //EndRegion Getter/Setters
 
+    //region public methods
+
+    /**+
+     * adds an orderitem to this assignment
+     * @param item orderitem to be added
+     */
     public void addItem(OrderItem item){
         items.add(item);
     }
@@ -57,4 +79,5 @@ public class Assignment {
                 ",\n\tpharmacy = " + pharmacy.getName() +
                 "\n}\n";
     }
+    //EndRegion public methods
 }

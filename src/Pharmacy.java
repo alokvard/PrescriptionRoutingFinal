@@ -48,10 +48,6 @@ public class Pharmacy {
         return inventory;
     }
 
-    /**
-     *
-     * @param inventory
-     */
     public void setInventory(Inventory[] inventory) {
 
         this.inventory = inventory;
@@ -73,9 +69,9 @@ public class Pharmacy {
     public void setLocation(String location) {
         this.location = location;
     }
-
     //EndRegion Getter/Setters
 
+    //Region public methods
     /**
      * updates the Inventory size
      * @param inventory inventory to be updated
@@ -165,4 +161,5 @@ public class Pharmacy {
         }
         return estimates;
     }
+    //EndRegion public methods
 }

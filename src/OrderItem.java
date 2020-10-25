@@ -16,6 +16,12 @@ public class OrderItem {
     public OrderItem() {
 
     }
+
+    public OrderItem(OrderItem cloneOrderItem) {
+        this.drug = cloneOrderItem.getDrug();
+        this.order = cloneOrderItem.getOrder();
+        this.quantity = cloneOrderItem.getQuantity();
+    }
     //EndRegion constructor
 
     //Region Getter/Setters
